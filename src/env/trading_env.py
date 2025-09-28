@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
-import gym
-from gym import spaces
+import gymnasium
+from gymnasium import spaces
 
 
 class TradingEnv(gym.Env):

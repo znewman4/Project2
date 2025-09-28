@@ -3,7 +3,7 @@ requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "project2"
+name = "src"        # package name (shows up in pip list)
 version = "0.1.0"
 dependencies = [
     "pandas",
@@ -11,7 +11,9 @@ dependencies = [
     "pyyaml",
     "matplotlib",
     "pyarrow",
+    "numpy",
+    "gymnasium"
 ]
 
-[tool.setuptools.packages.find]
-where = ["src"]
+[tool.setuptools]
+packages = ["src"]  # <- force setuptools to install "src" as the package
