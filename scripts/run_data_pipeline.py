@@ -1,3 +1,10 @@
+import sys
+from pathlib import Path
+
+# Add repo root to Python path (parent of 'scripts/')
+repo_root = Path(__file__).resolve().parents[1]
+sys.path.append(str(repo_root))
+
 from src.utils.io import load_config
 from src.data_pipeline.ingest import fetch_ohlcv, save_raw
 
