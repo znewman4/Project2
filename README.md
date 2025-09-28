@@ -11,7 +11,8 @@ your-project/
 ├─ configs/
 │  ├─ data.yaml
 │  ├─ env.yaml
-│  ├─ rl.yaml
+│  
+├─ rl.yaml
 │  └─ regimes.yaml
 ├─ data/
 │  ├─ sample/
