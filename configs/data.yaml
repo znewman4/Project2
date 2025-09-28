@@ -1,7 +1,7 @@
 data:
   exchange: binance
   symbol: BTC/USDT
-  timeframe: 1h
+  timeframe: 5m
   limit: 1000
   paths:
     raw: data/raw
