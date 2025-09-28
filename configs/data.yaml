@@ -1,0 +1,9 @@
+data:
+  exchange: binance
+  symbol: BTC/USDT
+  timeframe: 1h
+  limit: 1000
+  paths:
+    raw: data/raw
+    interim: data/interim
+    processed: data/processed
