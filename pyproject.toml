@@ -12,3 +12,6 @@ dependencies = [
     "matplotlib",
     "pyarrow",
 ]
+
+[tool.setuptools.packages.find]
+where = ["src"]
