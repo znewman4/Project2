@@ -1,0 +1,4 @@
+pandas
+ccxt
+pyarrow
+matplotlib
