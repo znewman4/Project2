@@ -5,11 +5,23 @@ from src.utils.io import load_config
 from src.data_pipeline.ingest import seed_ohlcv, append_new_ohlcv
 from src.data_pipeline.clean import clean_and_resample, save_clean
 
+# Set up logging
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s | %(levelname)s | %(name)s | %(message)s"
 )
 logger = logging.getLogger("run_data_pipeline")
+
+# Map CCXT freq -> pandas freq
+FREQ_MAP = {
+    "1m": "1min",
+    "5m": "5min",
+    "15m": "15min",
+    "30m": "30min",
+    "1h": "1H",
+    "4h": "4H",
+    "1d": "1D"
+}
 
 def main():
     # 1. Load config
@@ -36,8 +48,9 @@ def main():
         df = append_new_ohlcv(cfg, raw_file)
 
     # 4. Clean
-    logger.info("Cleaning dataset (continuity, duplicates, resampling)")
-    df_clean = clean_and_resample(df, freq=timeframe)
+    pandas_freq = FREQ_MAP.get(timeframe, timeframe)
+    logger.info("Cleaning dataset with pandas freq=%s", pandas_freq)
+    df_clean = clean_and_resample(df, freq=pandas_freq)
 
     # 5. Save cleaned to interim
     save_clean(df_clean, interim_file)

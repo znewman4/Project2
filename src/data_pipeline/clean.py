@@ -19,18 +19,18 @@ def enforce_continuity(df: pd.DataFrame, freq: str) -> pd.DataFrame:
     return df.reindex(full_index)
 
 def clean_and_resample(df: pd.DataFrame, freq="5min") -> pd.DataFrame:
-    """Drop duplicates, enforce continuity, optional resample."""
-    # Drop dups
-    before = len(df)
-    df = df[~df.index.duplicated(keep="first")]
-    dropped = before - len(df)
-    if dropped > 0:
-        logger.warning("Dropped %d duplicate rows", dropped)
+    # Drop duplicates
+    df = df[~df.index.duplicated(keep="first")].sort_index()
 
-    # Continuity
-    df = enforce_continuity(df, freq)
+    # Enforce continuity
+    full_index = pd.date_range(df.index.min(), df.index.max(), freq=freq)
+    missing = full_index.difference(df.index)
+    if len(missing) > 0:
+        logger.warning("⚠️ Missing %d bars (~%.2f%%)", len(missing), len(missing) / len(full_index) * 100)
 
+    df = df.reindex(full_index)
     return df
+
 
 def save_clean(df: pd.DataFrame, file_path: Path):
     """Save cleaned dataset to parquet."""
