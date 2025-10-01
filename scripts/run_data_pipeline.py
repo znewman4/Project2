@@ -21,16 +21,15 @@ def main():
     timeframe = ex_cfg["timeframe"]
 
     raw_dir = Path(ex_cfg["paths"]["raw"])
-    processed_dir = Path(ex_cfg["paths"]["processed"])
+    interim_dir = Path(ex_cfg["paths"]["interim"])
 
     raw_file = raw_dir / f"{symbol}_{timeframe}.parquet"
-    processed_file = processed_dir / f"{symbol}_{timeframe}.parquet"
+    interim_file = interim_dir / f"{symbol}_{timeframe}.parquet"
 
-    # 3. Ingest
+    # 3. Ingest (seed if first time, else append)
     if not raw_file.exists():
         logger.info("Seeding dataset from %s to %s",
-                    ex_cfg["start_date"],
-                    ex_cfg.get("end_date", "now"))
+                    ex_cfg["start_date"], ex_cfg.get("end_date", "now"))
         df = seed_ohlcv(cfg, raw_file)
     else:
         logger.info("Appending new data to %s", raw_file)
@@ -40,10 +39,11 @@ def main():
     logger.info("Cleaning dataset (continuity, duplicates, resampling)")
     df_clean = clean_and_resample(df, freq=timeframe)
 
-    # 5. Save cleaned
-    save_clean(df_clean, processed_file)
+    # 5. Save cleaned to interim
+    save_clean(df_clean, interim_file)
+
     logger.info("✅ Pipeline complete: %d rows saved to %s",
-                len(df_clean), processed_file)
+                len(df_clean), interim_file)
 
 if __name__ == "__main__":
     main()
