@@ -6,3 +6,4 @@ pyyaml
 gymnasium
 numpy
 ipykernal
+pytest

@@ -1,0 +1,19 @@
+# experiments/exp001_baselines.yaml
+
+agent:
+  name: EMABaselineAgent
+  params:
+    short_window: 10
+    long_window: 30
+
+environment:
+  config: configs/env.yaml
+
+data:
+  config: configs/data.yaml
+
+evaluation:
+  backtest:
+    start_date: "2022-01-01"
+    end_date: "2022-12-31"
+    metrics: ["sharpe", "pnl", "max_drawdown"]
