@@ -1,25 +1,48 @@
 import logging
 from pathlib import Path
+
 from src.utils.io import load_config
 from src.data_pipeline.ingest import seed_ohlcv, append_new_ohlcv
 from src.data_pipeline.clean import clean_and_resample, save_clean
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s | %(levelname)s | %(name)s | %(message)s"
+)
 
-if __name__ == "__main__":
+logger = logging.getLogger("run_data_pipeline")
+
+def main():
+    # 1. Load config
     cfg = load_config("configs/data.yaml")
-    interim_file = Path(cfg["data"]["paths"]["interim"]) / "btcusdt_5m.parquet"
-    processed_file = Path(cfg["data"]["paths"]["processed"]) / "btcusdt_5m.parquet"
+    ex_cfg = cfg["data"]
 
+    # 2. Build file paths
+    symbol = ex_cfg["symbol"].replace("/", "").lower()
+    timeframe = ex_cfg["timeframe"]
+    interim_dir = Path(ex_cfg["paths"]["interim"])
+    processed_dir = Path(ex_cfg["paths"]["processed"])
+    interim_file = interim_dir / f"{symbol}_{timeframe}.parquet"
+    processed_file = processed_dir / f"{symbol}_{timeframe}.parquet"
+
+    # 3. Ingest (seed if first time, else append)
     if not interim_file.exists():
-        logging.info("Seeding dataset...")
+        logger.info("Seeding dataset from %s to %s", 
+                    ex_cfg["start_date"], ex_cfg.get("end_date", "now"))
         df = seed_ohlcv(cfg, interim_file)
     else:
-        logging.info("Appending new bars...")
+        logger.info("Appending new data to existing dataset")
         df = append_new_ohlcv(cfg, interim_file)
 
-    logging.info("Cleaning dataset...")
-    df_clean = clean_and_resample(df, freq=cfg["data"]["timeframe"])
+    # 4. Clean
+    logger.info("Cleaning dataset (continuity, duplicates, resampling)")
+    df_clean = clean_and_resample(df, freq=timeframe)
+
+    # 5. Save cleaned
     save_clean(df_clean, processed_file)
 
-    logging.info("✅ Pipeline complete")
+    logger.info("✅ Pipeline complete: %d rows saved to %s", len(df_clean), processed_file)
+
+
+if __name__ == "__main__":
+    main()
