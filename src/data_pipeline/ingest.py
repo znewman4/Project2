@@ -3,8 +3,6 @@ import logging
 import pandas as pd
 import ccxt
 from pathlib import Path
-from src.utils.io import load_config
-from datetime import datetime, timezone
 
 logger = logging.getLogger(__name__)
 
