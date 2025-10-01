@@ -3,6 +3,10 @@ data:
   symbol: BTC/USDT
   timeframe: 5m
   limit: 1000
+  retries: 3
+  retry_backoff: 5
+  start_date: "2025-01-01"
+  end_date: "2025-09-01"
   paths:
     raw: data/raw
     interim: data/interim

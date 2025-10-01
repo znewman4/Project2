@@ -4,6 +4,7 @@ import pandas as pd
 import ccxt
 from pathlib import Path
 from src.utils.io import load_config
+from datetime import datetime, timezone
 
 logger = logging.getLogger(__name__)
 
@@ -60,4 +61,66 @@ def append_new_ohlcv(cfg: dict, file_path: Path) -> pd.DataFrame:
 
     logger.info("Appended %d rows up to %s (total %d rows)",
                 len(df_new), df_new.index[-1], len(df))
+    return df
+
+
+def batch_to_df(batch: list) -> pd.DataFrame:
+    """Convert CCXT OHLCV batch to DataFrame with timestamp index."""
+    if not batch:
+        return pd.DataFrame(columns=["open","high","low","close","volume"])
+    df = pd.DataFrame(batch, columns=["timestamp","open","high","low","close","volume"])
+    df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms", utc=True)
+    return df.set_index("timestamp")
+
+def seed_ohlcv(cfg: dict, file_path: Path) -> pd.DataFrame:
+    ex_cfg   = cfg["data"]
+    exchange = getattr(ccxt, ex_cfg["exchange"])({"enableRateLimit": True})
+    symbol   = ex_cfg["symbol"]
+    timeframe = ex_cfg["timeframe"]
+    limit    = ex_cfg.get("limit", 1000)
+
+    # Parse dates
+    start_ts = int(pd.Timestamp(ex_cfg["start_date"]).tz_localize("UTC").timestamp() * 1000)
+    end_ts   = ex_cfg.get("end_date")
+    if end_ts:
+        end_ts = int(pd.Timestamp(end_ts).tz_localize("UTC").timestamp() * 1000)
+    else:
+        end_ts = int(pd.Timestamp.utcnow().timestamp() * 1000)  # default = now
+
+    all_batches = []
+    since = start_ts
+
+    while since < end_ts:
+        batch = fetch_with_retry(
+            lambda: exchange.fetch_ohlcv(symbol, timeframe, since=since, limit=limit),
+            retries=ex_cfg.get("retries", 3),
+            backoff=ex_cfg.get("retry_backoff", 5),
+        )
+        if not batch:
+            logger.info("No more data returned at %s", pd.to_datetime(since, unit="ms", utc=True))
+            break
+
+        all_batches.extend(batch)
+
+        last_ts = batch[-1][0]
+        since   = last_ts + 1
+
+        # Progress logging
+        logger.info("Fetched %d bars, up to %s",
+                    len(batch),
+                    pd.to_datetime(last_ts, unit="ms", utc=True))
+
+        if since <= last_ts:  # safety
+            logger.warning("Exchange returned duplicate last_ts, breaking loop.")
+            break
+
+    df = batch_to_df(all_batches)
+
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    df.to_parquet(file_path)
+
+    logger.info("Seeded %d rows from %s to %s",
+                len(df),
+                ex_cfg["start_date"],
+                ex_cfg.get("end_date", "now"))
     return df
