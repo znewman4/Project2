@@ -20,14 +20,17 @@ def run_backtest(exp_path: str):
     symbol = data_cfg["data"]["symbol"].replace("/", "").lower()
     timeframe = data_cfg["data"]["timeframe"]
     filename = f"{symbol}_{timeframe}.parquet"
-    data_path = os.path.join(data_cfg["data"]["paths"]["processed"], filename)
+    data_path = os.path.join(data_cfg["data"]["paths"]["interim"], filename)
 
     df = pd.read_parquet(data_path)
 
     # filter backtest window
-    start_date = pd.to_datetime(exp_cfg["evaluation"]["backtest"]["start_date"])
-    end_date = pd.to_datetime(exp_cfg["evaluation"]["backtest"]["end_date"])
+    start_date = pd.to_datetime(exp_cfg["evaluation"]["backtest"]["start_date"]).tz_localize("UTC")
+    end_date = pd.to_datetime(exp_cfg["evaluation"]["backtest"]["end_date"]).tz_localize("UTC")
     df = df[(df.index >= start_date) & (df.index <= end_date)]
+
+    df.columns = [c.capitalize() for c in df.columns] # Ensure 'Close' column is capitalized
+
 
     # 3. Init env + agent
     env = TradingEnv(df, env_cfg)

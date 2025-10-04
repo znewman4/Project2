@@ -76,7 +76,7 @@ class Portfolio:
                 self.cash -= (cost + fee)
                 self.trades.append((step, action, px, size))
 
-        elif action == 2:  # SELL
+        elif action == -1:  # SELL
             proceeds = px * size
             fee = proceeds * self.cfg.commission_pct
             new_pos = self.position - size

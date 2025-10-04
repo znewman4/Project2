@@ -18,7 +18,7 @@ def _read_config(cfg: Dict[str, Any]) -> tuple[int, Optional[int], dict[str, Any
 
     # map env/reward keys into PortfolioConfig
     p_cfg = PortfolioConfig(
-        initial_cash   = env_cfg.get("initial_cash", 10_000.0),
+        initial_cash   = env_cfg.get("initial_cash", 1000_000.0),
         trade_size     = env_cfg.get("trade_size", 1.0),
         allow_short    = env_cfg.get("allow_short", True),
         max_position   = env_cfg.get("max_position", None),
