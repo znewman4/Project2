@@ -1,7 +1,7 @@
 agent:
   name: QLearningPolicyAgent
   params:
-    q_table_path: "results/artifacts/qlearn_20251005_201411/q_table.pkl"
+    q_table_path: "results/artifacts/qlearn_20251005_221407/q_table.pkl"
 
 environment:
   config: "configs/env.yaml"

@@ -118,6 +118,8 @@ class TradingEnv(gym.Env):
     def _info(self) -> dict:
         # grab the current row of feature values
         row = self.df.iloc[self.current_step]
+        row_lower = {k.lower(): v for k, v in row.items()}
+
 
         return {
             # core portfolio + environment info
@@ -128,9 +130,9 @@ class TradingEnv(gym.Env):
             "step": self.current_step,
 
             # feature-based signals for the agent's state
-            "momentum_sign": float(row.get("momentum_sign", 0)),
-            "ema_signal": float(row.get("ema_signal", 0)),
-            "rsi_signal": float(row.get("rsi_signal", 0)),
-            "volatility": float(row.get("volatility", 0)),
+            "momentum_sign": float(row_lower.get("momentum_sign", 0)),
+            "ema_signal": float(row_lower.get("ema_signal", 0)),
+            "rsi_signal": float(row_lower.get("rsi_signal", 0)),
+            "volatility": float(row_lower.get("volatility", 0)),
         }
 

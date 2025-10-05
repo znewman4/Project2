@@ -3,6 +3,8 @@ import argparse, os
 import json
 import pandas as pd
 import importlib
+from pathlib import Path
+import glob
 
 
 from src.utils.io import load_config
@@ -22,7 +24,7 @@ def run_backtest(exp_path: str):
     symbol = data_cfg["data"]["symbol"].replace("/", "").lower()
     timeframe = data_cfg["data"]["timeframe"]
     filename = f"{symbol}_{timeframe}.parquet"
-    data_path = os.path.join(data_cfg["data"]["paths"]["interim"], filename)
+    data_path = os.path.join(data_cfg["data"]["paths"]["processed"], filename)
 
     df = pd.read_parquet(data_path)
 
@@ -38,6 +40,20 @@ def run_backtest(exp_path: str):
     env = TradingEnv(df, env_cfg)
     agent_name = exp_cfg["agent"]["name"]
     agent_params = exp_cfg["agent"].get("params", {})
+
+        # --- Auto-detect latest Q-table if missing or stale ---
+    if agent_name == "QLearningPolicyAgent":
+        q_path = agent_params.get("q_table_path", None)
+        if not q_path or not Path(q_path).exists():
+            latest_q = sorted(glob.glob("results/artifacts/qlearn_*/q_table.pkl"))
+            if latest_q:
+                q_path = latest_q[-1]  # newest artifact
+                agent_params["q_table_path"] = q_path
+                print(f"🔁 Auto-selected latest Q-table: {q_path}")
+            else:
+                raise FileNotFoundError("❌ No Q-learning artifacts found in results/artifacts/")
+        else:
+            print(f"✅ Using Q-table from config: {q_path}")
 
     # Try importing agent dynamically from known agent modules
     possible_modules = ["src.agents.baselines", "src.agents.q_learning"]
