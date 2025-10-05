@@ -1,0 +1,16 @@
+agent:
+  name: QLearningPolicyAgent
+  params:
+    q_table_path: "results/artifacts/qlearn_20251005_201411/q_table.pkl"
+
+environment:
+  config: "configs/env.yaml"
+
+data:
+  config: "configs/data.yaml"
+
+evaluation:
+  backtest:
+    start_date: "2025-01-01"
+    end_date: "2025-10-01"
+    metrics: ["pnl", "sharpe", "max_drawdown"]

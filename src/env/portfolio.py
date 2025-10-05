@@ -52,7 +52,7 @@ class Portfolio:
     def _exec_price(self, price: float, action: int) -> float:
         if action == 1:   # buy
             return price * (1.0 + self.cfg.slippage_pct)
-        if action == 2:   # sell
+        if action == -1:   # sell
             return price * (1.0 - self.cfg.slippage_pct)
         return price
 

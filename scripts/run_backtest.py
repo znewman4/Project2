@@ -2,6 +2,8 @@
 import argparse, os
 import json
 import pandas as pd
+import importlib
+
 
 from src.utils.io import load_config
 from src.env.trading_env import TradingEnv
@@ -34,8 +36,22 @@ def run_backtest(exp_path: str):
 
     # 3. Init env + agent
     env = TradingEnv(df, env_cfg)
-    agent_cls = globals()[exp_cfg["agent"]["name"]]  # e.g. EMABaselineAgent
-    agent = agent_cls(**exp_cfg["agent"]["params"])
+    agent_name = exp_cfg["agent"]["name"]
+    agent_params = exp_cfg["agent"].get("params", {})
+
+    # Try importing agent dynamically from known agent modules
+    possible_modules = ["src.agents.baselines", "src.agents.q_learning"]
+    agent_cls = None
+    for mod in possible_modules:
+        module = importlib.import_module(mod)
+        if hasattr(module, agent_name):
+            agent_cls = getattr(module, agent_name)
+            break
+
+    if agent_cls is None:
+        raise ImportError(f"Agent class '{agent_name}' not found in known modules.")
+
+    agent = agent_cls(**agent_params)
 
     # 4. Run backtest loop
     obs, info = env.reset()
@@ -60,18 +76,25 @@ def run_backtest(exp_path: str):
         elif m == "max_drawdown":
             metrics["max_drawdown"] = compute_maxdd(equity_history)
 
-    # 6. Save results
-    with open("results/artifacts/exp001.json", "w") as f:
+    # 6. Save results with unique agent label
+    agent_label = exp_cfg["agent"]["name"].lower()
+
+    artifacts_dir = "results/artifacts"
+    plots_dir = "results/plots"
+    os.makedirs(artifacts_dir, exist_ok=True)
+    os.makedirs(plots_dir, exist_ok=True)
+
+    metrics_path = os.path.join(artifacts_dir, f"{agent_label}.json")
+    plot_path = os.path.join(plots_dir, f"{agent_label}_equity.png")
+
+    with open(metrics_path, "w") as f:
         json.dump(metrics, f, indent=2)
 
-    plot_equity_curve(equity_history, trades, "results/plots/exp001.png")
-
-    print("Backtest complete. Results saved in results/artifacts/ and results/plots/.")
-
+    plot_equity_curve(equity_history, trades, plot_path)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--exp", type=str, default="experiments/exp001_baselines.yaml")
+    parser.add_argument("--exp", type=str, default="experiments/exp_qlearn.yaml")
     args = parser.parse_args()
 
     run_backtest(args.exp)
