@@ -53,19 +53,25 @@ def run_backtest(exp_path: str):
 
     agent = agent_cls(**agent_params)
 
-    # 4. Run backtest loop
+# 4. Run backtest loop (aware of info dict)
     obs, info = env.reset()
     terminated, truncated = False, False
     equity_history, trades = [], []
 
     while not (terminated or truncated):
-        action = agent.act(obs)
+        # --- Context-aware action call ---
+        try:
+            action = agent.act(obs, info)
+        except TypeError:
+            # fallback for baselines (act(obs) only)
+            action = agent.act(obs)
+
+        # --- Step environment ---
         obs, reward, terminated, truncated, info = env.step(action)
 
         equity_history.append(info.get("equity"))
         if "trade" in info and info["trade"] is not None:
             trades.append(info["trade"])
-
     # 5. Compute metrics
     metrics = {}
     for m in exp_cfg["evaluation"]["backtest"]["metrics"]:

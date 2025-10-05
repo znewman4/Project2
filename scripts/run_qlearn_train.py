@@ -25,20 +25,24 @@ logger = logging.getLogger("run_qlearn_train")
 # -----------------------------------------------------------
 def discretize_observation(obs: np.ndarray, info: dict) -> tuple:
     """
-    Convert array of recent prices + portfolio info into a discrete (momentum, trend, position) state.
+    Convert the latest observation and portfolio info into a richer discrete state:
+    (momentum, ema_signal, vol_bin, rsi_signal, position)
     """
-    # 1. Momentum sign: recent price relative to average
-    momentum_sign = int(np.sign(obs[-1] - np.mean(obs)))
+    # fallback if info doesn't include feature values
+    momentum = int(np.sign(info.get("momentum_sign", 0)))
+    ema_signal = int(np.sign(info.get("ema_signal", 0)))
+    rsi_signal = int(np.sign(info.get("rsi_signal", 0)))
 
-    # 2. EMA signal: short-term vs long-term trend (simple proxy)
-    short_ema = np.mean(obs[-3:]) if len(obs) >= 3 else np.mean(obs)
-    long_ema = np.mean(obs)
-    ema_signal = int(np.sign(short_ema - long_ema))
+    vol = info.get("volatility", 0)
+    if np.isnan(vol) or vol == 0:
+        vol_bin = 0
+    else:
+        vol_bin = int(vol > np.nanmedian([vol]))  # binary vol regime
 
-    # 3. Position sign: current portfolio stance
     position = int(np.sign(info.get("position", 0)))
 
-    return (momentum_sign, ema_signal, position)
+    return (momentum, ema_signal, vol_bin, rsi_signal, position)
+
 
 # -----------------------------------------------------------
 # Training loop
@@ -55,7 +59,7 @@ def train_qlearner(
 
     # --- Initialize environment and agent ---
     env = TradingEnv(df, cfg)
-    agent = QLearningAgent(alpha=0.1, gamma=0.95, epsilon=0.1)
+    agent = QLearningAgent(alpha=0.1, gamma=0.995, epsilon=0.3)
 
     # --- Prepare save paths ---
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")

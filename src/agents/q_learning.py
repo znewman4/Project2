@@ -83,20 +83,30 @@ class QLearningPolicyAgent:
 
     def discretize_observation(self, obs, info=None):
         if info is None:
-            info = {"position": 0}
+            info = {}
 
-        momentum_sign = int(np.sign(obs[-1] - np.mean(obs)))
-        short_ema = np.mean(obs[-3:]) if len(obs) >= 3 else np.mean(obs)
-        long_ema = np.mean(obs)
-        ema_signal = int(np.sign(short_ema - long_ema))
+        # Same 5-feature logic used in training
+        momentum = int(np.sign(info.get("momentum_sign", 0)))
+        ema_signal = int(np.sign(info.get("ema_signal", 0)))
+        rsi_signal = int(np.sign(info.get("rsi_signal", 0)))
+
+        vol = info.get("volatility", 0)
+        if np.isnan(vol) or vol == 0:
+            vol_bin = 0
+        else:
+            vol_bin = int(vol > np.nanmedian([vol]))  # binary vol regime
+
         position = int(np.sign(info.get("position", 0)))
-        return (momentum_sign, ema_signal, position)
 
-    def act(self, obs):
-        """Select greedy action from Q-table for given observation."""
-        state = self.discretize_observation(obs)
+        return (momentum, ema_signal, vol_bin, rsi_signal, position)
+
+    
+    def act(self, obs, info=None):
+        state = self.discretize_observation(obs, info)
         if state not in self.q_table:
             return 0  # hold if unseen
         q_values = self.q_table[state]
         return max(q_values, key=q_values.get)
+
+
 

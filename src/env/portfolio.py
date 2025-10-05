@@ -91,7 +91,7 @@ class Portfolio:
         prev_equity: float,
         new_equity: float,
     ) -> float:
-        base = new_equity - prev_equity
+        base = (new_equity - prev_equity) / prev_equity
 
         # step return for Sharpe
         step_ret = 0.0 if prev_equity <= 0 else (new_equity - prev_equity) / prev_equity

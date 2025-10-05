@@ -36,7 +36,7 @@ def _read_config(cfg: Dict[str, Any]) -> tuple[int, Optional[int], dict[str, Any
 class TradingEnv(gym.Env):
     """
     Gymnasium environment wrapper.
-    Actions: 0=hold, 1=buy(+size), 2=sell(-size)
+    Actions: 0=hold, 1=buy(+size), -1=sell(-size)
     Observation: last N closes
     Reward: Δequity + sharpe_alpha*Sharpe - dd_beta*drawdown
     """
@@ -116,10 +116,21 @@ class TradingEnv(gym.Env):
         return self.df["Close"].iloc[s:e].values.astype(np.float32)
 
     def _info(self) -> dict:
+        # grab the current row of feature values
+        row = self.df.iloc[self.current_step]
+
         return {
+            # core portfolio + environment info
             "equity": self.portfolio.equity,
             "cash": self.portfolio.cash,
             "position": self.portfolio.position,
             "reward_components": self.portfolio.last_reward_components,
             "step": self.current_step,
+
+            # feature-based signals for the agent's state
+            "momentum_sign": float(row.get("momentum_sign", 0)),
+            "ema_signal": float(row.get("ema_signal", 0)),
+            "rsi_signal": float(row.get("rsi_signal", 0)),
+            "volatility": float(row.get("volatility", 0)),
         }
+
