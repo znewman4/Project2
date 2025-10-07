@@ -58,7 +58,6 @@ class Portfolio:
 
     def apply_action(self, step: int, action: int, price: float) -> None:
         """
-        action: 0=hold, 1=buy(+size), 2=sell(-size)
         Mutates cash/position with commission & slippage; records trade.
         """
         if action == 0:
@@ -66,12 +65,22 @@ class Portfolio:
 
         px = self._exec_price(price, action)
         size = self.cfg.trade_size
+        print(f"[Diag] apply_action called | step={step} action={action} px={price} cash={self.cash} pos={self.position}")
+
 
         if action == 1:  # BUY
             cost = px * size
             fee = cost * self.cfg.commission_pct
             new_pos = self.position + size
-            if self._within_bounds(new_pos) and self.cash >= cost + fee:
+            within = self._within_bounds(new_pos)
+            cash_ok = self.cash >= cost + fee
+
+            print(
+                f"[Diag] BUY precheck | new_pos={new_pos} cost={cost:.2f} fee={fee:.2f} "
+                f"within={within} cash_ok={cash_ok}"
+            )
+
+            if within and cash_ok:
                 self.position = new_pos
                 self.cash -= (cost + fee)
                 self.trades.append((step, action, px, size))

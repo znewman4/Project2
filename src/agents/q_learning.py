@@ -15,8 +15,8 @@ class QLearningAgent:
     def __init__(self,
                  actions=(-1, 0, 1),
                  alpha=0.1,       # learning rate
-                 gamma=0.95,      # discount factor
-                 epsilon=0.1):    # exploration probability
+                 gamma=0.995,      # discount factor
+                 epsilon=0.8):    # exploration probability
         self.actions = list(actions)
         self.alpha = alpha
         self.gamma = gamma

@@ -89,6 +89,7 @@ class TradingEnv(gym.Env):
         # reward
         reward = self.portfolio.reward(prev_equity, new_equity)
 
+
         # termination / truncation
         terminated = self.current_step >= (len(self.df) - 1)
         truncated = False
