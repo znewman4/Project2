@@ -60,7 +60,8 @@ class DQNAgent:
         self.target_net = QNetwork(obs_dim, action_dim, cfg["network"]["hidden_sizes"]).to(self.device)
         self.target_net.load_state_dict(self.q_net.state_dict())
 
-        self.optimizer = optim.Adam(self.q_net.parameters(), lr=cfg.get("lr", 1e-4))
+        lr_value = float(cfg.get("lr", 1e-4))
+        self.optimizer = optim.Adam(self.q_net.parameters(), lr=lr_value)
         self.replay = ReplayBuffer(cfg.get("replay_size", 50_000))
         self.target_update_interval = cfg.get("target_update_interval", 1000)
         self.step_count = 0
