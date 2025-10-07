@@ -1,0 +1,7 @@
+wasserstein:
+  enabled: true
+  window: 500
+  spans: [250, 1000]
+  multivariate: false
+  cols: ["returns"]
+  compute_diagnostics: true
