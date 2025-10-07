@@ -14,7 +14,10 @@ dependencies = [
     "pyyaml",
     "ccxt",
     "gymnasium",
-    "pytest"
+    "pytest",
+    "scipy",
+    "tqdm",
+    "wandb"
 ]
 
 [tool.setuptools]
