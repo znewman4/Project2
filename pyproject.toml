@@ -15,9 +15,9 @@ dependencies = [
     "ccxt",
     "gymnasium",
     "pytest",
-    "torch",          # <--- REQUIRED for DQN/PPO
-    "tqdm",           # optional, for training progress bars
-    "wandb"           # optional, for experiment logging
+    "torch",          
+    "tqdm",          
+    "wandb"           
 ]
 
 [tool.setuptools]
