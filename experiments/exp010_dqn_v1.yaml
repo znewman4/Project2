@@ -4,8 +4,8 @@ experiment:
   seed: 42
   save_dir: "results/artifacts/dqn_v1"
   log_dir: "results/logs/dqn_v1"
-  total_timesteps: 500000
-  eval_interval: 10000
+  total_timesteps: 50000
+  eval_interval: 1000
 
 env:
   module: "src.env.trading_env.TradingEnv"
