@@ -3,18 +3,22 @@ requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "src"        # package name (shows up in pip list)
+name = "src"
 version = "0.1.0"
+description = "Regime-aware RL trading framework"
 dependencies = [
     "pandas",
-    "ccxt",
-    "pyyaml",
+    "numpy",
     "matplotlib",
     "pyarrow",
-    "numpy",
+    "pyyaml",
+    "ccxt",
     "gymnasium",
-    "pytest"
+    "pytest",
+    "torch",          # <--- REQUIRED for DQN/PPO
+    "tqdm",           # optional, for training progress bars
+    "wandb"           # optional, for experiment logging
 ]
 
 [tool.setuptools]
-packages = ["src"]  # <- force setuptools to install "src" as the package
+packages = ["src"]
