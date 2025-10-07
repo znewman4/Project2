@@ -96,6 +96,10 @@ def train_qlearner(
 
             if terminated or truncated:
                 break
+            
+        # Decay exploration rate
+        agent.epsilon = max(0.05, agent.epsilon * 0.98)
+
 
         # Diagnostics
         episode_rewards.append(total_reward)

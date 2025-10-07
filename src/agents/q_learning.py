@@ -14,7 +14,7 @@ class QLearningAgent:
 
     def __init__(self,
                  actions=(-1, 0, 1),
-                 alpha=0.1,       # learning rate
+                 alpha=0.2,       # learning rate
                  gamma=0.995,      # discount factor
                  epsilon=0.8):    # exploration probability
         self.actions = list(actions)
@@ -103,16 +103,6 @@ class QLearningPolicyAgent:
     
     def act(self, obs, info=None):
         state = self.discretize_observation(obs, info)
-
-        if not hasattr(self, "_printed"):
-            print("⚙️ Sample state from backtest:", state)
-            print("⚙️ Example Q-table keys:", list(self.q_table.keys())[:5])
-            if state in self.q_table:
-                print("✅ State found in Q-table!")
-            else:
-                print("❌ State not found — value mismatch")
-            self._printed = True
-
         if state not in self.q_table:
             return 0
         q_values = self.q_table[state]
