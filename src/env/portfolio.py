@@ -65,7 +65,6 @@ class Portfolio:
 
         px = self._exec_price(price, action)
         size = self.cfg.trade_size
-        print(f"[Diag] apply_action called | step={step} action={action} px={price} cash={self.cash} pos={self.position}")
 
 
         if action == 1:  # BUY
@@ -74,11 +73,6 @@ class Portfolio:
             new_pos = self.position + size
             within = self._within_bounds(new_pos)
             cash_ok = self.cash >= cost + fee
-
-            print(
-                f"[Diag] BUY precheck | new_pos={new_pos} cost={cost:.2f} fee={fee:.2f} "
-                f"within={within} cash_ok={cash_ok}"
-            )
 
             if within and cash_ok:
                 self.position = new_pos
