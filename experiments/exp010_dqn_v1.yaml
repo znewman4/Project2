@@ -1,0 +1,39 @@
+
+experiment:
+  name: "dqn_v1"
+  seed: 42
+  save_dir: "results/artifacts/dqn_v1"
+  log_dir: "results/logs/dqn_v1"
+  total_timesteps: 500000
+  eval_interval: 10000
+
+env:
+  module: "src.env.trading_env.TradingEnv"
+  data_path: "data/processed/btcusdt_5m.parquet"
+  window_size: 96        # number of bars in observation
+  trading_fee: 0.001     # 0.1%
+  initial_balance: 10000
+  reward_mode: "pnl"     # or "log-return"
+
+agent:
+  module: "src.agents.dqn.DQNAgent"
+  network:
+    hidden_sizes: [128, 128]
+    activation: "relu"
+  gamma: 0.99
+  lr: 1e-4
+  batch_size: 64
+  replay_size: 50000
+  epsilon_start: 1.0
+  epsilon_end: 0.05
+  epsilon_decay: 0.995
+  target_update_interval: 1000
+
+optimizer:
+  type: "adam"
+  lr: 1e-4
+
+logging:
+  use_wandb: false
+  checkpoint_every: 50000
+  print_every: 1000
