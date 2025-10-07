@@ -13,7 +13,8 @@ dependencies = [
     "pyarrow",
     "numpy",
     "gymnasium",
-    "pytest"
+    "pytest",
+    "scipy"
 ]
 
 [tool.setuptools]
