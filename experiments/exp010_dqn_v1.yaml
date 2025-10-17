@@ -9,7 +9,7 @@ experiment:
 
 env:
   module: "src.env.trading_env.TradingEnv"
-  data_path: "data/processed/btcusdt_5m.parquet"
+  data_path: "data/processed/btcusdt_with_wasserstein_signals.parquet"
   window_size: 96        # number of bars in observation
   trading_fee: 0.001     # 0.1%
   initial_balance: 10000

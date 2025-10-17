@@ -53,9 +53,20 @@ class TradingEnv(gym.Env):
 
         # spaces
         self.action_space = spaces.Discrete(3)
+
+        # Dynamically infer observation size from _get_obs()
+        dummy_step = self.window_size  # ensure enough data for window
+        self.current_step = dummy_step
+        obs_sample = self._get_obs()
+        obs_shape = obs_sample.shape if isinstance(obs_sample, np.ndarray) else (len(obs_sample),)
+
         self.observation_space = spaces.Box(
-            low=-np.inf, high=np.inf, shape=(self.window_size,), dtype=np.float32
+            low=-np.inf, high=np.inf,
+            shape=obs_shape,
+            dtype=np.float32
         )
+
+
 
         # state
         self.current_step: int = 0
@@ -114,7 +125,31 @@ class TradingEnv(gym.Env):
     def _get_obs(self) -> np.ndarray:
         s = self.current_step - self.window_size
         e = self.current_step
-        return self.df["Close"].iloc[s:e].values.astype(np.float32)
+
+        # --- 1. price window (normalized)
+        price_window = self.df["Close"].iloc[s:e].values.astype(np.float32)
+        # Normalize prices relative to the most recent close
+        price_window = price_window / price_window[-1] - 1.0
+
+        # --- 2. regime + technical features
+        extra_feats = []
+        for col in ["wasserstein_smooth_250", "wasserstein_smooth_1000",
+                    "momentum_sign", "ema_signal", "rsi_signal", "volatility"]:
+            if col in self.df.columns:
+                val = float(self.df[col].iloc[e - 1])
+                if np.isnan(val):
+                    val = 0.0
+                extra_feats.append(val)
+
+        obs = np.concatenate([price_window, np.array(extra_feats, dtype=np.float32)])
+
+        # --- 3. Optional: z-score normalize final vector for stability
+        obs = (obs - obs.mean()) / (obs.std() + 1e-8)
+
+        return obs
+
+
+
 
     def _info(self) -> dict:
         # grab the current row of feature values

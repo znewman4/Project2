@@ -122,7 +122,7 @@ class Portfolio:
             "sharpe_term": float(sharpe_term),
             "drawdown_term": float(dd_term),
         }
-        return float(shaped)
+        return float(shaped * 100.0) # scale up for learning stability
 
     @property
     def last_reward_components(self):

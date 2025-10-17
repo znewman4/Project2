@@ -6,18 +6,21 @@ build-backend = "setuptools.build_meta"
 name = "src"
 version = "0.1.0"
 description = "Regime-aware RL trading framework"
+
+# Core scientific stack
 dependencies = [
-    "pandas",
-    "numpy",
-    "matplotlib",
-    "pyarrow",
-    "pyyaml",
-    "ccxt",
-    "gymnasium",
-    "pytest",
-    "torch",          
-    "tqdm",          
-    "wandb"           
+    "torch==2.2.2",              # confirmed stable build
+    "numpy>=1.24,<2.0",          # avoids NumPy 2.x ABI break
+    "pandas>=2.2,<2.3",
+    "matplotlib>=3.8,<3.9",
+    "pyarrow>=16,<18",
+    "pyyaml>=6.0",
+    "gymnasium>=0.29,<0.30",
+    "tqdm>=4.66,<5.0",
+
+    # utilities
+    "ccxt>=4.0,<5.0",
+    "wandb>=0.17,<0.18",
 ]
 
 [tool.setuptools]
